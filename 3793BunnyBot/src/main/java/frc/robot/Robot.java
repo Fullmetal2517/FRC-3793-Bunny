@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.Servo;
 
-
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the TimedRobot
@@ -23,72 +22,66 @@ import edu.wpi.first.wpilibj.Servo;
  * project.
  */
 
+// DigitalInput switchInput = new DigitalInput(0);
 
-//DigitalInput switchInput = new DigitalInput(0);
- 
 public class Robot extends TimedRobot {
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
-  private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
-  
-  Servo exampleServo = new Servo(0);
-  DigitalInput digitalInput = new DigitalInput(0);
+  static GenericHID driverController = new XboxController(0);
+  static GenericHID operatorController = new XboxController(1);
+  public static GenericHID[] controllers = new GenericHID[2];
+  private static boolean singleControllerMode = false;
+  public static int controllerSelector = 0;
+  private static GenericHID Master = null;
 
-  int inputState = 0;
+  public static final int DRIVER = 0;
+  public static final int OPERATOR = 1;
+
+  public boolean shooting = false;
+
+  public int shootingStartTime = 0;
+  public int shootTimer = 0;
+
+  public boolean setOnce = false;
 
   /**
-   * This function is run when the robot is first started up and should be
-   * used for any initialization code.
+   * This function is run when the robot is first started up and should be used
+   * for any initialization code.
    */
   @Override
   public void robotInit() {
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
-    SmartDashboard.putData("Auto choices", m_chooser);
+    controllers[DRIVER] = driverController;
+    controllers[OPERATOR] = operatorController;
+
   }
 
   /**
-   * This function is called every robot packet, no matter the mode. Use
-   * this for items like diagnostics that you want ran during disabled,
-   * autonomous, teleoperated and test.
+   * This function is called every robot packet, no matter the mode. Use this for
+   * items like diagnostics that you want ran during disabled, autonomous,
+   * teleoperated and test.
    *
-   * <p>This runs after the mode specific periodic functions, but before
-   * LiveWindow and SmartDashboard integrated updating.
+   * <p>
+   * This runs after the mode specific periodic functions, but before LiveWindow
+   * and SmartDashboard integrated updating.
    */
   @Override
   public void robotPeriodic() {
 
-    if(digitalInput.get()){
-      inputState = 0;
-    }else{
-      inputState = 1;
-    }
-    exampleServo.set(inputState * 90);
-
-    // if(inputState == 0){
-    //   exampleServo.set(0);
-    // }else{
-    //   exampleServo.set(90);
-    // }
   }
 
   /**
    * This autonomous (along with the chooser code above) shows how to select
-   * between different autonomous modes using the dashboard. The sendable
-   * chooser code works with the Java SmartDashboard. If you prefer the
-   * LabVIEW Dashboard, remove all of the chooser code and uncomment the
-   * getString line to get the auto name from the text box below the Gyro
+   * between different autonomous modes using the dashboard. The sendable chooser
+   * code works with the Java SmartDashboard. If you prefer the LabVIEW Dashboard,
+   * remove all of the chooser code and uncomment the getString line to get the
+   * auto name from the text box below the Gyro
    *
-   * <p>You can add additional auto modes by adding additional comparisons to
-   * the switch structure below with additional strings. If using the
-   * SendableChooser make sure to add them to the chooser code above as well.
+   * <p>
+   * You can add additional auto modes by adding additional comparisons to the
+   * switch structure below with additional strings. If using the SendableChooser
+   * make sure to add them to the chooser code above as well.
    */
   @Override
   public void autonomousInit() {
-    m_autoSelected = m_chooser.getSelected();
-    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-    System.out.println("Auto selected: " + m_autoSelected);
+
   }
 
   /**
@@ -96,15 +89,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
-    switch (m_autoSelected) {
-      case kCustomAuto:
-        // Put custom auto code here
-        break;
-      case kDefaultAuto:
-      default:
-        // Put default auto code here
-        break;
-    }
+
   }
 
   /**
@@ -112,8 +97,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    inputState = digitalInput.get()?1:0;
-    exampleServo.set(inputState * 90);
+    shooterControl();
+    intakeControl();
   }
 
   /**
@@ -121,7 +106,31 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void testPeriodic() {
-    
 
   }
+
+  public void shooterControl() {
+    if (controllers[OPERATOR].getRawButton(ControllerMap.A)) {
+      if (!setOnce) {
+        shootingStartTime = (int) System.currentTimeMillis();
+        setOnce = true;
+      }
+
+      Motors.shootyBoi.set(1);
+      if ((System.currentTimeMillis() - shootingStartTime) > 2000) {
+        Motors.stirryBoi.set(1);
+      }
+    } else {
+      setOnce = false;
+    }
+  }
+
+  public void intakeControl() {
+    if (controllers[OPERATOR].getRawButton(ControllerMap.B)) {
+      Motors.intakeBoi.set(0);
+    } else {
+      Motors.intakeBoi.set(1);
+    }
+  }
+
 }
