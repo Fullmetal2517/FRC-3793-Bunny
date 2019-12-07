@@ -51,6 +51,16 @@ public class Robot extends TimedRobot {
     controllers[DRIVER] = driverController;
     controllers[OPERATOR] = operatorController;
 
+    try {
+      Motors.initialize();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    try {
+      Sensors.initialize();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   /**
@@ -97,8 +107,13 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    shooterControl();
-    intakeControl();
+    try {
+      driveControl();
+      shooterControl();
+      intakeControl();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   /**
@@ -107,6 +122,39 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
 
+  }
+
+  private void driveControl() {
+    double dif;
+    double leftY = controllers[DRIVER].getRawAxis(ControllerMap.leftTrigger)
+        - controllers[DRIVER].getRawAxis(ControllerMap.rightTrigger);
+
+    if (Math.abs(leftY) < Settings.BUMPER_DEADZONE)
+      dif = 0.0;
+    else {
+      dif = (leftY / Math.abs(leftY)) * (.4 + (Math.abs(leftY) * .6));
+    }
+    double lx = controllers[DRIVER].getRawAxis(ControllerMap.leftX);
+    double lNum;
+    if (Math.abs(lx) > Settings.LSTICK_DEADZONE)
+      lNum = controllers[DRIVER].getRawAxis(ControllerMap.leftX);
+    else
+      lNum = 0;
+    if (lNum == 0 && dif == 0)
+      Motors.drive.arcadeDrive(0, 0);
+    else {
+      if (controllers[DRIVER].getRawButton(ControllerMap.A))
+        Motors.drive.arcadeDrive(-dif * Settings.SPEED_MULT, lNum);
+      else if (controllers[DRIVER].getRawButton(ControllerMap.B)) { // Sicko mode button
+        Motors.talonLeft.enableCurrentLimit(false);
+        Motors.talonRight.enableCurrentLimit(false);
+        Motors.drive.arcadeDrive(-dif * Settings.SPEED_MULT, lNum * Settings.TURN_MULT);
+      } else {
+        Motors.talonLeft.enableCurrentLimit((true));
+        Motors.talonRight.enableCurrentLimit((true));
+        Motors.drive.arcadeDrive(-dif * Settings.SPEED_MULT, lNum * Settings.TURN_MULT);
+      }
+    }
   }
 
   public void shooterControl() {

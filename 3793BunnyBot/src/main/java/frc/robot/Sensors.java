@@ -16,25 +16,8 @@ import util.*;
  *
  */
 public class Sensors {
-	public static DigitalInput vacuumPivotSwitch;
 	public static AHRS navX;
-	public static SerialPort jeVois1;
-	public static SerialPort jeVois2;
-
-	public static Ultrasonic downDist;
-
-	public static DigitalInput avocadoLimit;
-	public static DigitalInput beltLimit;
-
-	public static I2C avocadoLidar;
-	public static Lidar lidar;
-
 	public static void initialize() {
-		new JeVois().start();
-		vacuumPivotSwitch = new DigitalInput(4);
-		// beltLimit = new DigitalInput(RobotMap.BELT_LIMIT.getPin());
-		lidar = new Lidar();
-		lidar.start();
 		navX = new AHRS(SPI.Port.kMXP);
 	}
 }
