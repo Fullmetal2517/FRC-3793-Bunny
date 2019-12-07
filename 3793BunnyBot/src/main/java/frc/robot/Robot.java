@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.Servo;
 
-/**
+/*/
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the TimedRobot
  * documentation. If you change the name of this class or the package after
