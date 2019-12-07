@@ -34,7 +34,7 @@ public class Motors {
 	// ------------------------------ Other Motors ------------------------------
 
 	public static WPI_VictorSPX shootyBoi;
-	public static WPI_TalonSPX stirryBoi;
+	public static WPI_VictorSPX stirryBoi;
 	public static WPI_TalonSRX intakeBoi;
 
 	/**
@@ -63,7 +63,7 @@ public class Motors {
 		// blinkin = new Spark(RobotMap.BLINKIN.getPin());
 
 		shootyboi = new WPI_VictorSPX(RobotMap.SHOOTY_BOI.getPin());
-		stirryBoi = new WPI_TalonSPX(RobotMap.STIRRY_BOI.getPin());
+		stirryBoi = new WPI_VictorSPX(RobotMap.STIRRY_BOI.getPin());
 		intakeBoi = new WPI_TalonSRX(RobotMap.INTAKE_BOI.getPin());
 
 		Motors.victorRight.follow(Motors.talonRight);
