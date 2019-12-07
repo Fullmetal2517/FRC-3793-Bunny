@@ -33,19 +33,9 @@ public class Motors {
 
 	// ------------------------------ Other Motors ------------------------------
 
-	public static Spark blinkin;
-
-	public static Spark armMotor;
-	public static Spark avocadoMotor;
-	public static Talon beltMotor;
-	public static Spark blinkin2019;
-
-	public static Compressor compressor;
-	public static Solenoid avocadoSlide;
-	public static Solenoid landingGearExtend;
-	public static Solenoid landingGearRetract;
-	public static Solenoid landingGearStop;
-	public static Solenoid hinge;
+	public static WPI_VictorSPX shootyBoi;
+	public static WPI_TalonSPX stirryBoi;
+	public static WPI_TalonSRX intakeBoi;
 
 	/**
 	 * initializes all of the motors using the pins as specified in {@link RobotMap}
@@ -68,27 +58,13 @@ public class Motors {
 		drive = new DifferentialDrive(left, right);
 		drive.setDeadband(0);
 
-		armEndMotor = new WPI_VictorSPX(RobotMap.END_ARM_MOTOR.getPin());
-		
 		// ------------------------------ Other Motors ------------------------------
 
 		// blinkin = new Spark(RobotMap.BLINKIN.getPin());
 
-		armMotor = new Spark(RobotMap.ARM_MOTOR.getPin());
-		avocadoMotor = new Spark(RobotMap.AVACADO_MOTOR.getPin());
-
-		beltMotor = new Talon(RobotMap.BELT_MOTOR.getPin());
-		try{
-		blinkin2019 = new Spark(RobotMap.BLINKIN.getPin());
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		compressor = new Compressor(RobotMap.COMPRESSOR.getPin());
-		avocadoSlide = new Solenoid(RobotMap.AVACADO_SLIDE.getPin());
-		landingGearExtend = new Solenoid(RobotMap.LANDING_GEAR_EXTEND.getPin());
-		landingGearRetract = new Solenoid(RobotMap.LANDING_GEAR_RETRACT.getPin());
-		landingGearStop = new Solenoid(RobotMap.LANDING_GEAR_STOP.getPin());
-		hinge = new Solenoid(RobotMap.HINGE.getPin());
+		shootyboi = new WPI_VictorSPX(RobotMap.SHOOTY_BOI.getPin());
+		stirryBoi = new WPI_TalonSPX(RobotMap.STIRRY_BOI.getPin());
+		intakeBoi = new WPI_TalonSRX(RobotMap.INTAKE_BOI.getPin());
 
 		Motors.victorRight.follow(Motors.talonRight);
 		Motors.victorLeft.follow(Motors.talonLeft);
