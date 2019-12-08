@@ -47,7 +47,7 @@ public class toggleSwitch {
     }
 
     public void button(){
-        if(timer < TIMER_DELAY){ // TODO: Use timer class
+        if(timer < TIMER_DELAY){ 
             timer++;
         }
 

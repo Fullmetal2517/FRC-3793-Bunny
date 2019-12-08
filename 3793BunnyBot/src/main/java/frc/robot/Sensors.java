@@ -17,7 +17,11 @@ import util.*;
  */
 public class Sensors {
 	public static AHRS navX;
+	public static SerialPort jeVois1;
+	public static SerialPort jeVois2;
+
 	public static void initialize() {
+		new JeVois().start();
 		navX = new AHRS(SPI.Port.kMXP);
 	}
 }

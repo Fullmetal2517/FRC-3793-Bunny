@@ -14,7 +14,7 @@ public enum RobotMap {
 	TALON_RIGHT(4), 
 	VICTOR_LEFT(1), 
 	VICTOR_RIGHT(3),
-	SHOOTY_BOI(5), //Odds are Victors Evens are Talons 
+	SHOOTY_BOI(5), //Odds are Victors Evens are Talons`  
 	STIRRY_BOI(7),
 	INTAKE_BOI(6);
 
