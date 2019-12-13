@@ -3,10 +3,10 @@ package frc.robot;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Ultrasonic;
-import util.*;
 
 /**
  * Similar to {@link Motors}, this class stores all of the sensors to make them
@@ -16,12 +16,11 @@ import util.*;
  *
  */
 public class Sensors {
+	public static Encoder encoder;
 	public static AHRS navX;
-	public static SerialPort jeVois1;
-	public static SerialPort jeVois2;
-
 	public static void initialize() {
-		new JeVois().start();
 		navX = new AHRS(SPI.Port.kMXP);
+		encoder = new Encoder(1,2);
+		//encoder.setDistancePerPulse(1d/8192d);
 	}
 }

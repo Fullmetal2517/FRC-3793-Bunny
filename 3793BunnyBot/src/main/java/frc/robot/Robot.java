@@ -24,28 +24,41 @@ import edu.wpi.first.wpilibj.Servo;
 
 // DigitalInput switchInput = new DigitalInput(0);
 
-public class Robot extends TimedRobot {
+public class Robot extends TimedRobot implements PIDOutput {
   static GenericHID driverController = new XboxController(0);
   static GenericHID operatorController = new XboxController(1);
   public static GenericHID[] controllers = new GenericHID[2];
   private static boolean singleControllerMode = false;
   public static int controllerSelector = 0;
   private static GenericHID Master = null;
+  public static PIDController turnController;
+  public static LauncherController launcherController;
+  long delay = 500;
+  long startTime;
 
   public static final int DRIVER = 0;
   public static final int OPERATOR = 1;
 
   public boolean shooting = false;
 
-  public int shootingStartTime = 0;
+  public long shootingStartTime = 0;
   public int shootTimer = 0;
 
   public boolean setOnce = false;
+
+  int stage = 0;
+
+  public double PID;
 
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
    */
+  @Override
+  public void pidWrite(double output) {
+    PID = output;
+  }
+
   @Override
   public void robotInit() {
     controllers[DRIVER] = driverController;
@@ -61,6 +74,17 @@ public class Robot extends TimedRobot {
     } catch (Exception e) {
       e.printStackTrace();
     }
+    Motors.shootyBoi.set(0);
+    Motors.stirryBoi.set(0);
+    Motors.intakeBoi.set(0);
+    launcherController = new LauncherController(Motors.launcher);
+
+    turnController = new PIDController(Settings.kP, Settings.kI, Settings.kD, Settings.kF, Sensors.navX, this, .01);
+
+    turnController.setInputRange(-180.0f, 180.0f);
+		turnController.setOutputRange(-1.0, 1.0);
+		turnController.setAbsoluteTolerance(10);
+		turnController.setContinuous(true);
   }
 
   /**
@@ -84,14 +108,16 @@ public class Robot extends TimedRobot {
    * remove all of the chooser code and uncomment the getString line to get the
    * auto name from the text box below the Gyro
    *
-   * <p>
+   * 
    * You can add additional auto modes by adding additional comparisons to the
    * switch structure below with additional strings. If using the SendableChooser
    * make sure to add them to the chooser code above as well.
    */
   @Override
   public void autonomousInit() {
-
+    turnController.setSetpoint(Sensors.navX.getAngle() + 179.99);
+    turnController.enable();
+    startTime = System.currentTimeMillis();
   }
 
   /**
@@ -99,7 +125,55 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
-
+    switch(stage){
+      case 0:
+        launcherController.fire();
+        if(System.currentTimeMillis() - startTime > delay) {
+          startTime = System.currentTimeMillis();
+          stage++;
+        }
+        case 1:
+        Motors.drive.tankDrive(PID, -PID, false);
+        if(turnController.onTarget()) {
+          startTime = System.currentTimeMillis();
+          turnController.disable();
+          turnController.setSetpoint(Sensors.navX.getAngle());
+          turnController.setOutputRange(-.3, .3);
+          turnController.enable();
+          delay = 2000;
+          stage++;
+        }
+        break;
+        case 2:
+        Motors.drive.tankDrive(.7+PID, .7-PID, false);
+        if(System.currentTimeMillis() - startTime > delay) {
+          startTime = System.currentTimeMillis();
+          delay = 500;
+          stage++;
+        }
+        break;
+        case 3:
+        Motors.shootyBoi.set(.8);
+        if(System.currentTimeMillis() - startTime > delay) {
+          startTime = System.currentTimeMillis();
+          stage++;
+        }
+        break;
+        case 4:
+        Motors.stirryBoi.set(-.6);
+        if(System.currentTimeMillis() - startTime > delay) {
+          startTime = System.currentTimeMillis();
+          delay = 2500;
+          stage++;
+        }
+        break;
+        case 5:
+        Motors.drive.tankDrive(-(.7-PID), -(.7+PID), false);
+        if(System.currentTimeMillis() - startTime > delay) {
+          stage++;
+        }
+        break;
+    }
   }
 
   /**
@@ -111,8 +185,18 @@ public class Robot extends TimedRobot {
       driveControl();
       shooterControl();
       intakeControl();
+      reverseSpinny();
     } catch (Exception e) {
       e.printStackTrace();
+    }
+
+    if(controllers[OPERATOR].getRawButton(ControllerMap.Y)){
+      launcherController.fire();
+    }
+
+    
+    if(controllers[OPERATOR].getRawButton(ControllerMap.X)){
+      launcherController.load();
     }
   }
 
@@ -126,8 +210,8 @@ public class Robot extends TimedRobot {
 
   private void driveControl() {
     double dif;
-    double leftY = controllers[DRIVER].getRawAxis(ControllerMap.leftTrigger)
-        - controllers[DRIVER].getRawAxis(ControllerMap.rightTrigger);
+    double leftY = controllers[DRIVER].getRawAxis(ControllerMap.rightTrigger)
+        - controllers[DRIVER].getRawAxis(ControllerMap.leftTrigger);
 
     if (Math.abs(leftY) < Settings.BUMPER_DEADZONE)
       dif = 0.0;
@@ -160,25 +244,38 @@ public class Robot extends TimedRobot {
   public void shooterControl() {
     if (controllers[OPERATOR].getRawButton(ControllerMap.A)) {
       if (!setOnce) {
-        shootingStartTime = (int) System.currentTimeMillis();
+        shootingStartTime = System.currentTimeMillis();
         setOnce = true;
       }
 
-      Motors.shootyBoi.set(1);
-      if ((System.currentTimeMillis() - shootingStartTime) > 2000) {
-        Motors.stirryBoi.set(1);
+      Motors.shootyBoi.set(-.55);
+      if ((System.currentTimeMillis() - shootingStartTime) > 500 && setOnce) {
+        Motors.stirryBoi.set(.8);
       }
     } else {
       setOnce = false;
+      Motors.shootyBoi.set(0);
+      Motors.stirryBoi.set(0);
     }
   }
 
   public void intakeControl() {
     if (controllers[OPERATOR].getRawButton(ControllerMap.B)) {
-      Motors.intakeBoi.set(0);
-    } else {
       Motors.intakeBoi.set(1);
+    } else {
+      Motors.intakeBoi.set(0);
     }
+  }
+
+  public void reverseSpinny(){
+    if(controllers[OPERATOR].getRawButton(ControllerMap.LB))
+    Motors.stirryBoi.set(-1);
+  }
+
+  public double output(PIDController turnyBoi){
+
+
+    return 0;
   }
 
 }

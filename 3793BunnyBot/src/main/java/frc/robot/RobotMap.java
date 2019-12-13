@@ -10,13 +10,14 @@ package frc.robot;
  */
 public enum RobotMap {
 	// DRIVE MOTORS
-	TALON_LEFT(2), 
+	TALON_LEFT(6), 
 	TALON_RIGHT(4), 
-	VICTOR_LEFT(1), 
-	VICTOR_RIGHT(3),
-	SHOOTY_BOI(5), //Odds are Victors Evens are Talons`  
-	STIRRY_BOI(7),
-	INTAKE_BOI(6);
+	VICTOR_LEFT(7), 
+	VICTOR_RIGHT(5),
+	SHOOTY_BOI(3), //Odds are Victors Evens are Talons 
+	STIRRY_BOI(1),
+	INTAKE_BOI(2),
+	LAUNCHER(0);
 
 	private int pinNum;
 
